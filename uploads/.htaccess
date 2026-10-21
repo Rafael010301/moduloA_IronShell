@@ -1,0 +1,5 @@
+# Bloqueia a execução de scripts PHP dentro da pasta de uploads (Prevenção contra RCE / XSS)
+<FilesMatch "\.(php|php5|phtml|exe|sh)$">
+    Order Deny,Allow
+    Deny from all
+</FilesMatch>
