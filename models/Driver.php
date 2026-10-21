@@ -8,15 +8,10 @@ require_once __DIR__ . '/../config/database.php';
 
 class Driver {
 
-    /**
-     * Lista todos os motoristas com o veículo associado (se houver)
-     * 
-     * @return array
-     */
     public static function all() {
         $db = Database::getConnection();
         $stmt = $db->query("
-            SELECT m.*, v.placa 
+            SELECT m.*, v.placa, v.tipo_veiculo 
             FROM motoristas m 
             LEFT JOIN veiculos v ON m.id_veiculo = v.id_veiculo 
             ORDER BY m.id_motorista DESC
@@ -24,32 +19,24 @@ class Driver {
         return $stmt->fetchAll();
     }
 
-    /**
-     * Regista um novo motorista na base de dados (RF03)
-     * 
-     * @param string $nome
-     * @param string $cnhNumero
-     * @param string $cnhCategoria
-     * @param string $cnhValidade
-     * @param string $telefone
-     * @param int|null $idVeiculo
-     * @return bool
-     */
-    public static function create($nome, $cnhNumero, $cnhCategoria, $cnhValidade, $telefone, $idVeiculo) {
+    public static function create($nome, $cnh, $cnhCategoria, $telefone, $idVeiculo) {
         $db = Database::getConnection();
-        
         $stmt = $db->prepare("
-            INSERT INTO motoristas (nome, cnh_numero, cnh_categoria, cnh_validade, telefone, id_veiculo, status_disponibilidade) 
-            VALUES (:nome, :cnh_numero, :cnh_categoria, :cnh_validade, :telefone, :id_veiculo, 'disponivel')
+            INSERT INTO motoristas (nome, cnh, cnh_categoria, telefone, id_veiculo) 
+            VALUES (:nome, :cnh, :categoria, :telefone, :veiculo)
         ");
-        
         return $stmt->execute([
-            ':nome'          => trim($nome),
-            ':cnh_numero'    => trim($cnhNumero),
-            ':cnh_categoria' => strtoupper(trim($cnhCategoria)),
-            ':cnh_validade'  => $cnhValidade,
-            ':telefone'      => trim($telefone),
-            ':id_veiculo'    => !empty($idVeiculo) ? $idVeiculo : null
+            ':nome'      => trim($nome),
+            ':cnh'       => trim($cnh),
+            ':categoria' => trim($cnhCategoria),
+            ':telefone'  => trim($telefone),
+            ':veiculo'   => !empty($idVeiculo) ? intval($idVeiculo) : null
         ]);
+    }
+
+    public static function delete($id) {
+        $db = Database::getConnection();
+        $stmt = $db->prepare("DELETE FROM motoristas WHERE id_motorista = :id");
+        return $stmt->execute([':id' => $id]);
     }
 }

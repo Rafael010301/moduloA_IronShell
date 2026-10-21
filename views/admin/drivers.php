@@ -1,40 +1,42 @@
 <?php
 require_once __DIR__ . '/../../includes/security.php';
-requireRole(['admin', 'gestor']); 
+requireRole(['admin', 'gestor']);
 require_once __DIR__ . '/../../models/Driver.php';
-require_once __DIR__ . '/../../models/Vehicle.php';
+require_once __DIR__ . '/../../models/Vehicle.php'; // Para listar veículos disponíveis
 
 $mensagemSucesso = '';
 $mensagemErro = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $csrfToken = $_POST['csrf_token'] ?? '';
-    
     if (!verifyCSRFToken($csrfToken)) {
         die("Falha na validação CSRF.");
     }
 
-    $nome        = $_POST['nome'] ?? '';
-    $cnhNumero   = $_POST['cnh_numero'] ?? '';
-    $cnhCat      = $_POST['cnh_categoria'] ?? '';
-    $cnhValidade = $_POST['cnh_validade'] ?? '';
-    $telefone    = $_POST['telefone'] ?? '';
-    $idVeiculo   = $_POST['id_veiculo'] ?? null;
-
-    if (!empty($nome) && !empty($cnhNumero) && !empty($cnhCat)) {
-        try {
-            Driver::create($nome, $cnhNumero, $cnhCat, $cnhValidade, $telefone, $idVeiculo);
-            $mensagemSucesso = "Motorista registado com sucesso!";
-        } catch (PDOException $e) {
-            $mensagemErro = "Erro ao registar: O número da CNH já pode estar registado.";
+    if (isset($_POST['action']) && $_POST['action'] === 'delete') {
+        $id = intval($_POST['id_motorista'] ?? 0);
+        if ($id > 0) {
+            Driver::delete($id);
+            $mensagemSucesso = "Motorista eliminado com sucesso!";
         }
     } else {
-        $mensagemErro = "Por favor, preencha todos os campos obrigatórios.";
+        $nome = $_POST['nome'] ?? '';
+        $cnh = $_POST['cnh'] ?? '';
+        $categoria = $_POST['cnh_categoria'] ?? '';
+        $telefone = $_POST['telefone'] ?? '';
+        $veiculo = $_POST['id_veiculo'] ?? null;
+
+        if (!empty($nome) && !empty($cnh)) {
+            Driver::create($nome, $cnh, $categoria, $telefone, $veiculo);
+            $mensagemSucesso = "Motorista registado com sucesso!";
+        } else {
+            $mensagemErro = "Preencha os campos obrigatórios.";
+        }
     }
 }
 
-$motoristas = Driver.php ?? Driver::all();
-$veiculosDisponiveis = Vehicle::all();
+$motoristas = Driver::all();
+$veiculos = Vehicle::all();
 require_once __DIR__ . '/../layouts/header.php';
 ?>
 
@@ -52,20 +54,19 @@ require_once __DIR__ . '/../layouts/header.php';
     <div class="row mb-4">
         <div class="col-md-12">
             <h2>Gestão de Motoristas (RF03)</h2>
-            <p class="text-muted">Registe motoristas, valide categorias de CNH e vincule-os aos veículos da frota.</p>
+            <p class="text-muted">Registo e associação de motoristas à frota de veículos.</p>
         </div>
     </div>
 
     <?php if (!empty($mensagemSucesso)): ?>
         <div class="alert alert-success"><?= sanitizeOutput($mensagemSucesso); ?></div>
     <?php endif; ?>
-
     <?php if (!empty($mensagemErro)): ?>
         <div class="alert alert-danger"><?= sanitizeOutput($mensagemErro); ?></div>
     <?php endif; ?>
 
     <div class="row">
-        <!-- Formulário -->
+        <!-- Formulário de Registo -->
         <div class="col-md-4 mb-4">
             <div class="card p-3 shadow-sm">
                 <h5 class="card-title mb-3">Novo Motorista</h5>
@@ -74,18 +75,17 @@ require_once __DIR__ . '/../layouts/header.php';
 
                     <div class="mb-3">
                         <label class="form-label small fw-semibold">Nome Completo</label>
-                        <input type="text" class="form-control" name="nome" placeholder="Ex: João da Silva" required>
+                        <input type="text" class="form-control" name="nome" required>
                     </div>
 
                     <div class="mb-3">
                         <label class="form-label small fw-semibold">Número da CNH</label>
-                        <input type="text" class="form-control" name="cnh_numero" placeholder="Ex: 12345678900" required>
+                        <input type="text" class="form-control" name="cnh" required>
                     </div>
 
                     <div class="mb-3">
                         <label class="form-label small fw-semibold">Categoria CNH</label>
-                        <select class="form-control" name="cnh_categoria" required>
-                            <option value="">Selecione...</option>
+                        <select name="cnh_categoria" class="form-select" required>
                             <option value="B">B</option>
                             <option value="C">C</option>
                             <option value="D">D</option>
@@ -94,21 +94,16 @@ require_once __DIR__ . '/../layouts/header.php';
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label small fw-semibold">Validade da CNH</label>
-                        <input type="date" class="form-control" name="cnh_validade" required>
+                        <label class="form-label small fw-semibold">Telefone</label>
+                        <input type="text" class="form-control" name="telefone">
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label small fw-semibold">Telefone / Contato</label>
-                        <input type="text" class="form-control" name="telefone" placeholder="Ex: (11) 98765-4321" required>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label small fw-semibold">Veículo Atribuído (Opcional)</label>
-                        <select class="form-control" name="id_veiculo">
-                            <option value="">Nenhum no momento</option>
-                            <?php foreach ($veiculosDisponiveis as $v): ?>
-                                <option value="<?= $v['id_veiculo']; ?>"><?= sanitizeOutput($v['placa']); ?> (<?= sanitizeOutput($v['tipo']); ?>)</option>
+                        <label class="form-label small fw-semibold">Veículo Atribuído</label>
+                        <select name="id_veiculo" class="form-select">
+                            <option value="">Nenhum / Frota Geral</option>
+                            <?php foreach ($veiculos as $v): ?>
+                                <option value="<?= $v['id_veiculo']; ?>"><?= sanitizeOutput($v['placa']); ?> - <?= sanitizeOutput($v['tipo_veiculo']); ?></option>
                             <?php endforeach; ?>
                         </select>
                     </div>
@@ -118,7 +113,7 @@ require_once __DIR__ . '/../layouts/header.php';
             </div>
         </div>
 
-        <!-- Tabela -->
+        <!-- Tabela de Motoristas -->
         <div class="col-md-8">
             <div class="card p-3 shadow-sm">
                 <h5 class="card-title mb-3">Motoristas Registados</h5>
@@ -127,25 +122,32 @@ require_once __DIR__ . '/../layouts/header.php';
                         <thead>
                             <tr>
                                 <th>Nome</th>
-                                <th>CNH</th>
-                                <th>Validade</th>
+                                <th>CNH / Cat</th>
+                                <th>Telefone</th>
                                 <th>Veículo</th>
-                                <th>Status</th>
+                                <th class="text-end">Ações</th>
                             </tr>
                         </thead>
                         <tbody>
                             <?php if (empty($motoristas)): ?>
                                 <tr>
-                                    <td colspan="5" class="text-center text-muted">Nenhum motorista registado ainda.</td>
+                                    <td colspan="5" class="text-center text-muted">Nenhum motorista registado.</td>
                                 </tr>
                             <?php else: ?>
                                 <?php foreach ($motoristas as $m): ?>
                                     <tr>
-                                        <td><strong><?= sanitizeOutput($m['nome']); ?></strong><br><small class="text-muted"><?= sanitizeOutput($m['telefone']); ?></small></td>
-                                        <td><?= sanitizeOutput($m['cnh_numero']); ?> (<strong><?= sanitizeOutput($m['cnh_categoria']); ?></strong>)</td>
-                                        <td><?= sanitizeOutput($m['cnh_validade']); ?></td>
+                                        <td><strong><?= sanitizeOutput($m['nome']); ?></strong></td>
+                                        <td><?= sanitizeOutput($m['cnh']); ?> (Cat. <?= sanitizeOutput($m['cnh_categoria']); ?>)</td>
+                                        <td><?= sanitizeOutput($m['telefone']); ?></td>
                                         <td><?= !empty($m['placa']) ? sanitizeOutput($m['placa']) : '<span class="text-muted">Nenhum</span>'; ?></td>
-                                        <td><span class="badge bg-success"><?= sanitizeOutput($m['status_disponibilidade']); ?></span></td>
+                                        <td class="text-end">
+                                            <form action="index.php?route=drivers" method="POST" class="d-inline" onsubmit="return confirm('Tem certeza que deseja apagar este motorista?');">
+                                                <input type="hidden" name="csrf_token" value="<?= generateCSRFToken(); ?>">
+                                                <input type="hidden" name="action" value="delete">
+                                                <input type="hidden" name="id_motorista" value="<?= $m['id_motorista']; ?>">
+                                                <button type="submit" class="btn btn-outline-danger btn-sm">Apagar</button>
+                                            </form>
+                                        </td>
                                     </tr>
                                 <?php endforeach; ?>
                             <?php endif; ?>
