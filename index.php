@@ -100,7 +100,16 @@ switch ($route) {
         }
         exit();
         break;
-        
+    
+    case 'audit':
+        requireAuth();
+        require __DIR__ . '/views/admin/audit.php';
+        break;
+
+    case 'maintenance':
+        requireAuth();
+        require __DIR__ . '/views/admin/maintenance.php';
+        break;
     default:
         http_response_code(404);
         echo "<div style='text-align:center; margin-top:50px; font-family:sans-serif;'>
