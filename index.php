@@ -35,23 +35,72 @@ switch ($route) {
         $fleet = new FleetController();
         $fleet->createVehicle();
         break;
+
     case 'fleet':
         requireAuth();
         require __DIR__ . '/views/admin/fleet.php';
         break;
+
     case 'drivers':
         requireAuth();
         require __DIR__ . '/views/admin/drivers.php';
         break;
+
     case 'orders':
         requireAuth();
         require __DIR__ . '/views/admin/orders.php';
         break;
+    
+    case 'vehicles':
+        requireAuth();
+        require __DIR__ . '/views/admin/vehicles.php';
+        break;
+
     case 'optimizer':
         requireAuth();
         require __DIR__ . '/views/admin/optimizer.php';
         break;
 
+    case 'tracking':
+        requireAuth();
+        require __DIR__ . '/views/admin/tracking.php';
+        break;
+
+    case 'pod':
+        requireAuth();
+        require __DIR__ . '/views/admin/pod.php';
+        break;
+
+    case 'alerts':
+        requireAuth();
+        require __DIR__ . '/views/admin/alerts.php';
+        break;
+
+    case 'kpis':
+        requireAuth();
+        require __DIR__ . '/views/admin/kpis.php';
+        break;
+
+    case 'reports':
+        requireAuth();
+        require __DIR__ . '/views/admin/reports.php';
+        break;
+        
+
+    case 'resilience':
+        requireAuth();
+        require __DIR__ . '/views/admin/resilience.php';
+        break;
+
+    case 'chatbot_process':
+        require_once __DIR__ . '/models/Chatbot.php';
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $pergunta = $_POST['pergunta'] ?? '';
+            echo Chatbot::processarMensagem($pergunta);
+        }
+        exit();
+        break;
+        
     default:
         http_response_code(404);
         echo "<div style='text-align:center; margin-top:50px; font-family:sans-serif;'>

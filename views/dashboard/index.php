@@ -2,155 +2,143 @@
 require_once __DIR__ . '/../../includes/security.php';
 requireAuth();
 
-// Carregar modelos para estatísticas em tempo real
-require_once __DIR__ . '/../../models/Order.php';
-require_once __DIR__ . '/../../models/Vehicle.php';
-require_once __DIR__ . '/../../models/Driver.php';
-
-$totalPedidos = count(Order::all());
-$totalVeiculos = count(Vehicle::all());
-$totalMotoristas = count(Driver::all());
+// Recupera os dados da sessão com segurança
+$nomeUsuario = $_SESSION['usuario_nome'] ?? $_SESSION['user_nome'] ?? $_SESSION['email'] ?? 'Utilizador';
+$roleUsuario = $_SESSION['role'] ?? $_SESSION['tipo'] ?? 'operador';
 
 require_once __DIR__ . '/../layouts/header.php';
 ?>
 
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm mb-4">
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4 shadow-sm">
     <div class="container">
-        <a class="navbar-brand fw-bold" href="index.php?route=dashboard">
-            <i class="bi bi-truck-front-fill me-2"></i>SENN AI-X <span class="badge bg-primary fs-6">Logística</span>
-        </a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
-            <ul class="navbar-nav align-items-center">
-                <li class="nav-item me-3 text-light small">
-                    Olá, <strong><?= sanitizeOutput($_SESSION['user_nome'] ?? 'Utilizador'); ?></strong> 
-                    <span class="badge bg-secondary ms-1"><?= sanitizeOutput($_SESSION['user_cargo'] ?? 'operador'); ?></span>
-                </li>
-                <li class="nav-item">
-                    <a href="index.php?route=logout" class="btn btn-outline-danger btn-sm">Sair</a>
-                </li>
-            </ul>
+        <a class="navbar-brand fw-bold" href="index.php?route=dashboard">SENN AI-X <span class="badge bg-primary fs-6">Logística</span></a>
+        <div class="d-flex align-items-center text-white">
+            <span class="me-3 small text-light">Utilizador: <strong><?= sanitizeOutput($nomeUsuario); ?></strong> (<?= strtoupper(sanitizeOutput($roleUsuario)); ?>)</span>
+            <a href="index.php?route=logout" class="btn btn-outline-danger btn-sm">Sair</a>
         </div>
     </div>
 </nav>
 
 <div class="container pb-5">
-    <!-- Cabeçalho de Boas-Vindas -->
-    <div class="row mb-4 align-items-center">
-        <div class="col-md-8">
-            <h2 class="fw-bold text-dark">Painel de Controlo Operacional</h2>
-            <p class="text-muted">Bem-vindo à plataforma inteligente de gestão de frotas e otimização de rotas.</p>
-        </div>
-        <div class="col-md-4 text-md-end">
-            <span class="text-muted small"><i class="bi bi-calendar-event me-1"></i><?= date('d/m/Y'); ?></span>
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h2 class="fw-bold">Painel Operacional Central</h2>
+            <p class="text-muted">Bem-vindo ao sistema de gestão logística avançada. Selecione um módulo abaixo para gerir as operações.</p>
         </div>
     </div>
 
-    <!-- Indicadores Rápidos (Cards de Estatísticas) -->
-    <div class="row g-4 mb-5">
-        <div class="col-md-4">
-            <div class="card border-0 shadow-sm bg-primary text-white p-3">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <h6 class="text-uppercase small fw-semibold mb-1">Total de Pedidos</h6>
-                        <h3 class="fw-bold mb-0"><?= $totalPedidos; ?></h3>
-                    </div>
-                    <div class="fs-1 opacity-50"><i class="bi bi-box-seam"></i></div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-4">
-            <div class="card border-0 shadow-sm bg-success text-white p-3">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <h6 class="text-uppercase small fw-semibold mb-1">Veículos na Frota</h6>
-                        <h3 class="fw-bold mb-0"><?= $totalVeiculos; ?></h3>
-                    </div>
-                    <div class="fs-1 opacity-50"><i class="bi bi-truck"></i></div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-4">
-            <div class="card border-0 shadow-sm bg-warning text-dark p-3">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <h6 class="text-uppercase small fw-semibold mb-1">Motoristas Registados</h6>
-                        <h3 class="fw-bold mb-0"><?= $totalMotoristas; ?></h3>
-                    </div>
-                    <div class="fs-1 opacity-50"><i class="bi bi-person-badge"></i></div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Secção de Navegação e Acesso aos Módulos -->
-    <h4 class="fw-bold mb-3 text-secondary">Módulos do Sistema</h4>
+    <!-- Grelha de Módulos da Plataforma -->
     <div class="row g-4">
         
-        <!-- Módulo de Pedidos e CSV (RF04) -->
-        <div class="col-md-6 col-lg-3">
-            <div class="card h-100 shadow-sm border-0 hover-card">
-                <div class="card-body d-flex flex-column text-center p-4">
-                    <div class="mb-3 text-primary fs-1"><i class="bi bi-file-earmark-spreadsheet"></i></div>
-                    <h5 class="card-title fw-bold">Gestão de Pedidos</h5>
-                    <p class="card-text text-muted small flex-grow-1">Importação em lote via CSV, controlo de status e gestão de entregas.</p>
-                    <a href="index.php?route=orders" class="btn btn-outline-primary btn-sm mt-3 w-100">Aceder a Pedidos</a>
+        <!-- Frota (RF02) -->
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm border-0 p-3">
+                <div class="card-body">
+                    <h5 class="card-title fw-bold text-primary">Gestão de Frota</h5>
+                    <p class="card-text text-muted small">Registo, capacidade de carga e monitorização dos veículos da frota ativa.</p>
+                    <a href="index.php?route=vehicles" class="btn btn-outline-primary btn-sm w-100 fw-semibold">Aceder à Frota</a>
                 </div>
             </div>
         </div>
 
-        <!-- Módulo de Frotas (RF02) -->
-        <div class="col-md-6 col-lg-3">
-            <div class="card h-100 shadow-sm border-0 hover-card">
-                <div class="card-body d-flex flex-column text-center p-4">
-                    <div class="mb-3 text-success fs-1"><i class="bi bi-truck"></i></div>
-                    <h5 class="card-title fw-bold">Gestão de Frotas</h5>
-                    <p class="card-text text-muted small flex-grow-1">Registo de veículos, capacidades de carga volumétrica e placas.</p>
-                    <a href="index.php?route=fleet" class="btn btn-outline-success btn-sm mt-3 w-100">Aceder à Frota</a>
+        <!-- Motoristas (RF03) -->
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm border-0 p-3">
+                <div class="card-body">
+                    <h5 class="card-title fw-bold text-primary">Gestão de Motoristas</h5>
+                    <p class="card-text text-muted small">Registo de condutores, validação de CNH e atribuição de veículos.</p>
+                    <a href="index.php?route=drivers" class="btn btn-outline-primary btn-sm w-100 fw-semibold">Aceder a Motoristas</a>
                 </div>
             </div>
         </div>
 
-        <!-- Módulo de Motoristas (RF03) -->
-        <div class="col-md-6 col-lg-3">
-            <div class="card h-100 shadow-sm border-0 hover-card">
-                <div class="card-body d-flex flex-column text-center p-4">
-                    <div class="mb-3 text-warning fs-1"><i class="bi bi-person-badge"></i></div>
-                    <h5 class="card-title fw-bold">Gestão de Motoristas</h5>
-                    <p class="card-text text-muted small flex-grow-1">Registo de condutores, categorias de CNH e atribuição de veículos.</p>
-                    <a href="index.php?route=drivers" class="btn btn-outline-warning btn-sm mt-3 w-100 text-dark">Aceder a Motoristas</a>
+        <!-- Pedidos / CSV (RF04) -->
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm border-0 p-3">
+                <div class="card-body">
+                    <h5 class="card-title fw-bold text-primary">Gestão de Pedidos</h5>
+                    <p class="card-text text-muted small">Importação em lote via CSV, listagem e gestão de destinos de entrega.</p>
+                    <a href="index.php?route=orders" class="btn btn-outline-primary btn-sm w-100 fw-semibold">Aceder aos Pedidos</a>
                 </div>
             </div>
         </div>
 
-        <!-- Módulo de Otimização IA (RF05) -->
-        <div class="col-md-6 col-lg-3">
-            <div class="card h-100 shadow-sm border-0 hover-card">
-                <div class="card-body d-flex flex-column text-center p-4">
-                    <div class="mb-3 text-danger fs-1"><i class="bi bi-cpu"></i></div>
-                    <h5 class="card-title fw-bold">Otimização de Rotas</h5>
-                    <p class="card-text text-muted small flex-grow-1">Cruzamento inteligente por IA Predict e alocação de rotas de entrega.</p>
-                    <a href="index.php?route=optimizer" class="btn btn-outline-danger btn-sm mt-3 w-100">Aceder a Rotas IA</a>
+        <!-- Otimização IA (RF05) -->
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm border-0 p-3">
+                <div class="card-body">
+                    <h5 class="card-title fw-bold text-success">Otimização de Rotas (IA)</h5>
+                    <p class="card-text text-muted small">Motor preditivo de alocação de cargas, cálculo de risco e despacho inteligente.</p>
+                    <a href="index.php?route=optimizer" class="btn btn-outline-success btn-sm w-100 fw-semibold">Aceder ao Otimizador</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Rastreamento (RF06) -->
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm border-0 p-3">
+                <div class="card-body">
+                    <h5 class="card-title fw-bold text-success">Rastreamento em Tempo Real</h5>
+                    <p class="card-text text-muted small">Monitorização de entregas em curso, status da frota e percentuais de risco.</p>
+                    <a href="index.php?route=tracking" class="btn btn-outline-success btn-sm w-100 fw-semibold">Aceder ao Rastreamento</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- POD / Confirmação de Entrega (RF07) -->
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm border-0 p-3">
+                <div class="card-body">
+                    <h5 class="card-title fw-bold text-success">Confirmação de Entrega (POD)</h5>
+                    <p class="card-text text-muted small">Registo digital de comprovativos, assinaturas e encerramento de entregas.</p>
+                    <a href="index.php?route=pod" class="btn btn-outline-success btn-sm w-100 fw-semibold">Aceder ao POD</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Alertas (RF08) -->
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm border-0 p-3">
+                <div class="card-body">
+                    <h5 class="card-title fw-bold text-danger">Alertas e Anomalias</h5>
+                    <p class="card-text text-muted small">Notificações automáticas de desvios de rota, atrasos previstos e ocorrências.</p>
+                    <a href="index.php?route=alerts" class="btn btn-outline-danger btn-sm w-100 fw-semibold">Aceder aos Alertas</a>
+                </div>
+            </div>
+        </div>
+        <!-- KPIs Gerenciais (RF09) -->
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm border-0 p-3">
+                <div class="card-body">
+                    <h5 class="card-title fw-bold text-dark">Indicadores Gerenciais (KPIs)</h5>
+                    <p class="card-text text-muted small">Métricas estratégicas de volume, taxa de sucesso de entregas e médias de risco.</p>
+                    <a href="index.php?route=kpis" class="btn btn-outline-dark btn-sm w-100 fw-semibold">Aceder aos KPIs</a>
+                </div>
+            </div>
+        </div>
+        <!-- Relatórios e Exportação (RF10) -->
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm border-0 p-3">
+                <div class="card-body">
+                    <h5 class="card-title fw-bold text-dark">Relatórios e Exportação</h5>
+                    <p class="card-text text-muted small">Geração de relatórios operacionais em CSV para auditoria e controle externo.</p>
+                    <a href="index.php?route=reports" class="btn btn-outline-dark btn-sm w-100 fw-semibold">Aceder aos Relatórios</a>
+                </div>
+            </div>
+        </div>
+        <!-- Resiliência e Fallback (RF11) -->
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm border-0 p-3">
+                <div class="card-body">
+                    <h5 class="card-title fw-bold text-dark">Resiliência e Fallback</h5>
+                    <p class="card-text text-muted small">Monitorização de redundância de sistemas e ativação de rotas de contingência.</p>
+                    <a href="index.php?route=resilience" class="btn btn-outline-dark btn-sm w-100 fw-semibold">Aceder à Resiliência</a>
                 </div>
             </div>
         </div>
 
     </div>
 </div>
-
-<style>
-    .hover-card {
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
-    }
-    .hover-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 .5rem 1rem rgba(0,0,0,.15) !important;
-    }
-</style>
 
 </body>
 </html>

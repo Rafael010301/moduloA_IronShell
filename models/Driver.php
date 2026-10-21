@@ -10,7 +10,6 @@ class Driver {
 
     public static function all() {
         $db = Database::getConnection();
-        // Consulta segura utilizando apenas a placa para evitar erros de colunas inexistentes
         $stmt = $db->query("
             SELECT m.*, v.placa 
             FROM motoristas m 
@@ -23,15 +22,15 @@ class Driver {
     public static function create($nome, $cnh, $cnhCategoria, $telefone, $idVeiculo) {
         $db = Database::getConnection();
         $stmt = $db->prepare("
-            INSERT INTO motoristas (nome, cnh, cnh_categoria, telefone, id_veiculo) 
-            VALUES (:nome, :cnh, :categoria, :telefone, :veiculo)
+            INSERT INTO motoristas (nome, cnh_numero, cnh_categoria, telefone, id_veiculo) 
+            VALUES (:nome, :cnh_numero, :categoria, :telefone, :veiculo)
         ");
         return $stmt->execute([
-            ':nome'      => trim($nome),
-            ':cnh'       => trim($cnh),
-            ':categoria' => trim($cnhCategoria),
-            ':telefone'  => trim($telefone),
-            ':veiculo'   => !empty($idVeiculo) ? intval($idVeiculo) : null
+            ':nome'        => trim($nome),
+            ':cnh_numero'  => trim($cnh),
+            ':categoria'   => trim($cnhCategoria),
+            ':telefone'    => trim($telefone),
+            ':veiculo'     => !empty($idVeiculo) ? intval($idVeiculo) : null
         ]);
     }
 

@@ -33,7 +33,7 @@ require_once __DIR__ . '/../layouts/header.php';
 
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
     <div class="container">
-        <a class="navbar-brand" href="index.php?route=dashboard">SENN AI-X</a>
+        <a class="navbar-brand fw-bold" href="index.php?route=dashboard">SENN AI-X</a>
         <div class="d-flex align-items-center text-white">
             <a href="index.php?route=dashboard" class="btn btn-outline-light btn-sm me-3">Voltar ao Dashboard</a>
             <a href="index.php?route=logout" class="btn btn-outline-danger btn-sm">Sair</a>
@@ -41,7 +41,7 @@ require_once __DIR__ . '/../layouts/header.php';
     </div>
 </nav>
 
-<div class="container">
+<div class="container pb-5">
     <div class="row mb-4">
         <div class="col-md-12">
             <h2>Otimização de Rotas e IA Predict (RF05)</h2>
@@ -50,18 +50,24 @@ require_once __DIR__ . '/../layouts/header.php';
     </div>
 
     <?php if (!empty($mensagemSucesso)): ?>
-        <div class="alert alert-success"><?= sanitizeOutput($mensagemSucesso); ?></div>
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <?= sanitizeOutput($mensagemSucesso); ?>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
     <?php endif; ?>
 
     <?php if (!empty($mensagemErro)): ?>
-        <div class="alert alert-danger"><?= sanitizeOutput($mensagemErro); ?></div>
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <?= sanitizeOutput($mensagemErro); ?>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
     <?php endif; ?>
 
     <div class="row">
         <!-- Formulário de Alocação Inteligente -->
         <div class="col-md-5 mb-4">
-            <div class="card p-4 shadow-sm">
-                <h5 class="card-title mb-3">Atribuição de Rota por IA</h5>
+            <div class="card p-4 shadow-sm border-0">
+                <h5 class="card-title mb-3 fw-bold">Atribuição de Rota por IA</h5>
                 <form action="index.php?route=optimizer" method="POST">
                     <input type="hidden" name="csrf_token" value="<?= generateCSRFToken(); ?>">
 
@@ -83,7 +89,7 @@ require_once __DIR__ . '/../layouts/header.php';
                             <option value="">Selecione o Veículo...</option>
                             <?php foreach ($veiculos as $v): ?>
                                 <option value="<?= $v['id_veiculo']; ?>">
-                                    <?= sanitizeOutput($v['placa']); ?> (<?= sanitizeOutput($v['tipo_veiculo']); ?>)
+                                    <?= sanitizeOutput($v['placa']); ?> (<?= sanitizeOutput($v['tipo_veiculo'] ?? $v['modelo'] ?? $v['tipo'] ?? 'Frota Geral'); ?>)
                                 </option>
                             <?php endforeach; ?>
                         </select>
@@ -95,21 +101,21 @@ require_once __DIR__ . '/../layouts/header.php';
                             <option value="">Selecione o Motorista...</option>
                             <?php foreach ($motoristas as $m): ?>
                                 <option value="<?= $m['id_motorista']; ?>">
-                                    <?= sanitizeOutput($m['nome']); ?> (CNH: <?= sanitizeOutput($m['cnh_categoria']); ?>)
+                                    <?= sanitizeOutput($m['nome']); ?> (CNH: <?= sanitizeOutput($m['cnh_numero'] ?? $m['cnh'] ?? 'N/A'); ?>)
                                 </option>
                             <?php endforeach; ?>
                         </select>
                     </div>
 
-                    <button type="submit" class="btn btn-primary w-100">Otimizar e Despachar Rota</button>
+                    <button type="submit" class="btn btn-primary w-100 fw-bold">Otimizar e Despachar Rota</button>
                 </form>
             </div>
         </div>
 
         <!-- Explicação do Algoritmo Predict -->
         <div class="col-md-7">
-            <div class="card p-4 shadow-sm bg-light">
-                <h5 class="card-title mb-3 text-dark">Painel de Inteligência Artificial</h5>
+            <div class="card p-4 shadow-sm bg-light border-0">
+                <h5 class="card-title mb-3 text-dark fw-bold">Painel de Inteligência Artificial</h5>
                 <p class="text-secondary small">O motor de IA analisa variáveis de carga, peso e histórico para calcular automaticamente a probabilidade de atraso e sugerir a melhor distribuição de entregas.</p>
                 <hr>
                 <ul class="list-unstyled small text-muted">
