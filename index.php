@@ -43,6 +43,14 @@ switch ($route) {
         requireAuth();
         require __DIR__ . '/views/admin/drivers.php';
         break;
+    case 'orders':
+        requireAuth();
+        require __DIR__ . '/views/admin/orders.php';
+        break;
+    case 'optimizer':
+        requireAuth();
+        require __DIR__ . '/views/admin/optimizer.php';
+        break;
 
     default:
         http_response_code(404);
