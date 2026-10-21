@@ -10,8 +10,9 @@ class Driver {
 
     public static function all() {
         $db = Database::getConnection();
+        // Consulta segura utilizando apenas a placa para evitar erros de colunas inexistentes
         $stmt = $db->query("
-            SELECT m.*, v.placa, v.tipo_veiculo 
+            SELECT m.*, v.placa 
             FROM motoristas m 
             LEFT JOIN veiculos v ON m.id_veiculo = v.id_veiculo 
             ORDER BY m.id_motorista DESC
